@@ -16,14 +16,9 @@ logger = logging.getLogger(__name__)
 
 QUESTION, TYPING_REPLY, ANSWER = range(3)
 
-keyboard = [
-    ['Новый вопрос', 'Сдаться'],
-    ['Мой счёт']
-]
-
-reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 def start(update, context):
+    reply_markup = context.bot_data['reply_markup']
     update.message.reply_text('Привет! Я бот для викторин', reply_markup=reply_markup)
     return QUESTION
 
@@ -47,6 +42,7 @@ def handle_solution_attempt(update, context):
     user_id = update.message.from_user.id
     user_answer = update.message.text.strip().lower()
     redis_connection = context.bot_data['redis_connection']
+    reply_markup = context.bot_data['reply_markup']
     last_question = redis_connection.get(f'question:{user_id}')
 
     correct_answer = redis_connection.get(f'answer:{user_id}')
@@ -66,6 +62,7 @@ def handle_solution_attempt(update, context):
 def handle_surrender(update, context):
     user_id = update.message.from_user.id
     redis_connection = context.bot_data['redis_connection']
+    reply_markup = context.bot_data['reply_markup']
     correct_answer = redis_connection.get(f'answer:{user_id}')
     update.message.reply_text(f"Вот правильный ответ: {correct_answer}", reply_markup=reply_markup)
     handle_new_question_request(update, context)
@@ -88,6 +85,13 @@ def main() -> None:
     redis_password = env.str("REDIS_PASSWORD")
     redis_host = env.str("REDIS_HOST")
 
+    keyboard = [
+        ['Новый вопрос', 'Сдаться'],
+        ['Мой счёт']
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
     tg_bot_logger = telegram.Bot(token=tg_bot_logger)
 
     telegram_handler = TelegramLogsHandler(tg_bot_logger, unique_session_id)
@@ -108,6 +112,7 @@ def main() -> None:
             dispatcher = updater.dispatcher
 
             dispatcher.bot_data['redis_connection'] = redis_connection
+            dispatcher.bot_data['reply_markup'] = reply_markup
 
             conv_handler = ConversationHandler(
                 entry_points=[CommandHandler('start', start)],
