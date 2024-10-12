@@ -68,7 +68,7 @@ def handle_surrender(update, context):
     return QUESTION
 
 
-def done(update, context):
+def exit_bot(update, context):
     update.message.reply_text("До свидания! Буду рад, если вы вернетесь поиграть снова.")
     return ConversationHandler.END
 
@@ -131,7 +131,7 @@ def main() -> None:
 
                 },
 
-                fallbacks=[CommandHandler("done", done)]
+                fallbacks=[CommandHandler("done", exit_bot)]
             )
 
             dispatcher.add_handler(conv_handler)

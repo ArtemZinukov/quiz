@@ -82,7 +82,7 @@ def handle_surrender(user_id, vk, redis_connection, keyboard, questions_and_answ
     return QUESTION
 
 
-def done(user_id, vk):
+def exit_bot(user_id, vk):
     vk.messages.send(
         user_id=user_id,
         message="До свидания! Буду рад, если вы вернетесь поиграть снова.",
