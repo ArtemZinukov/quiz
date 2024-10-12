@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import os
 
 import redis
 import telegram
@@ -8,7 +9,7 @@ from environs import Env
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 
-from scripts import parse_questions, open_file
+from question_parser import parse_questions
 from tg_logger import TelegramLogsHandler
 
 logger = logging.getLogger(__name__)
@@ -28,9 +29,9 @@ def start(update, context):
 
 
 def handle_new_question_request(update, context):
-    file_contents = open_file("questions/1vs1298.txt")
-    questions_and_answers = parse_questions(file_contents)
-    print(questions_and_answers)
+    file_path = os.path.join("questions", "1vs1298.txt")
+    questions_and_answers = parse_questions(file_path)
+
     question, answer = random.choice(list(questions_and_answers.items()))
     redis_connection = context.bot_data['redis_connection']
 
@@ -47,9 +48,9 @@ def handle_solution_attempt(update, context):
     user_answer = update.message.text.strip().lower()
     redis_connection = context.bot_data['redis_connection']
     last_question = redis_connection.get(f'question:{user_id}')
-    print(last_question)
+
     correct_answer = redis_connection.get(f'answer:{user_id}')
-    print(correct_answer)
+
 
     if correct_answer:
         correct_answer = correct_answer.split('.')[0].strip().lower()

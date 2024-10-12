@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import os
 
 import redis
 import telegram
@@ -10,7 +11,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.utils import get_random_id
 
-from scripts import parse_questions, open_file
+from question_parser import parse_questions
 from tg_logger import TelegramLogsHandler
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,8 @@ def start(user_id, vk, keyboard):
 
 
 def handle_new_question_request(user_id, vk, redis_connection, keyboard):
-    file_contents = open_file("questions/1vs1298.txt")
-    questions_and_answers = parse_questions(file_contents)
+    file_path = os.path.join("questions", "1vs1298.txt")
+    questions_and_answers = parse_questions(file_path)
 
     question, answer = random.choice(list(questions_and_answers.items()))
 
