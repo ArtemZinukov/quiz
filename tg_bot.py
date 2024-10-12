@@ -24,10 +24,9 @@ def start(update, context):
 
 
 def handle_new_question_request(update, context):
-    file_path = os.path.join("questions", "1vs1298.txt")
-    questions_and_answers = parse_questions(file_path)
-
+    questions_and_answers = context.bot_data['questions_and_answers']
     question, answer = random.choice(list(questions_and_answers.items()))
+
     redis_connection = context.bot_data['redis_connection']
 
     user_id = update.message.from_user.id
@@ -92,6 +91,9 @@ def main() -> None:
 
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
+    file_path = os.path.join("questions", "1vs1298.txt")
+    questions_and_answers = parse_questions(file_path)
+
     tg_bot_logger = telegram.Bot(token=tg_bot_logger)
 
     telegram_handler = TelegramLogsHandler(tg_bot_logger, unique_session_id)
@@ -113,6 +115,7 @@ def main() -> None:
 
             dispatcher.bot_data['redis_connection'] = redis_connection
             dispatcher.bot_data['reply_markup'] = reply_markup
+            dispatcher.bot_data['questions_and_answers'] = questions_and_answers
 
             conv_handler = ConversationHandler(
                 entry_points=[CommandHandler('start', start)],

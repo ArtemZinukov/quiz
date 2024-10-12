@@ -29,10 +29,7 @@ def start(user_id, vk, keyboard):
     return QUESTION
 
 
-def handle_new_question_request(user_id, vk, redis_connection, keyboard):
-    file_path = os.path.join("questions", "1vs1298.txt")
-    questions_and_answers = parse_questions(file_path)
-
+def handle_new_question_request(user_id, vk, redis_connection, keyboard, questions_and_answers):
     question, answer = random.choice(list(questions_and_answers.items()))
 
     redis_connection.set(f'question:{user_id}', question)
@@ -73,7 +70,7 @@ def handle_solution_attempt(user_id, user_answer, vk, redis_connection, keyboard
         return ANSWER
 
 
-def handle_surrender(user_id, vk, redis_connection, keyboard):
+def handle_surrender(user_id, vk, redis_connection, keyboard, questions_and_answers):
     correct_answer = redis_connection.get(f'answer:{user_id}')
     vk.messages.send(
         user_id=user_id,
@@ -81,7 +78,7 @@ def handle_surrender(user_id, vk, redis_connection, keyboard):
         keyboard=keyboard.get_keyboard(),
         random_id=get_random_id()
     )
-    handle_new_question_request(user_id, vk, redis_connection, keyboard)
+    handle_new_question_request(user_id, vk, redis_connection, keyboard, questions_and_answers)
     return QUESTION
 
 
@@ -115,6 +112,9 @@ def main() -> None:
 
     longpoll = VkLongPoll(vk_session)
 
+    file_path = os.path.join("questions", "1vs1298.txt")
+    questions_and_answers = parse_questions(file_path)
+
     tg_bot_logger = telegram.Bot(token=tg_bot_logger)
 
     telegram_handler = TelegramLogsHandler(tg_bot_logger, unique_session_id)
@@ -139,10 +139,10 @@ def main() -> None:
                         start(user_id, vk, keyboard)
 
                     elif user_message == "новый вопрос":
-                        handle_new_question_request(user_id, vk, redis_connection, keyboard)
+                        handle_new_question_request(user_id, vk, redis_connection, keyboard, questions_and_answers)
 
                     elif user_message == "сдаться":
-                        handle_surrender(user_id, vk, redis_connection, keyboard)
+                        handle_surrender(user_id, vk, redis_connection, keyboard, questions_and_answers)
 
                     else:
                         handle_solution_attempt(user_id, user_message, vk, redis_connection, keyboard)
