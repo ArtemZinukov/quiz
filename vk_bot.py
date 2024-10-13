@@ -135,17 +135,19 @@ def main() -> None:
                     user_message = event.text.strip().lower()
                     user_id = event.user_id
 
-                    if user_message == "привет" or user_message == "начать":
-                        start(user_id, vk, keyboard)
+                    command_handlers = {
+                        "привет": lambda: start(user_id, vk, keyboard),
+                        "начать": lambda: start(user_id, vk, keyboard),
+                        "новый вопрос": lambda: handle_new_question_request(user_id, vk, redis_connection, keyboard,
+                                                                            questions_and_answers),
+                        "сдаться": lambda: handle_surrender(user_id, vk, redis_connection, keyboard,
+                                                            questions_and_answers)
+                    }
 
-                    elif user_message == "новый вопрос":
-                        handle_new_question_request(user_id, vk, redis_connection, keyboard, questions_and_answers)
-
-                    elif user_message == "сдаться":
-                        handle_surrender(user_id, vk, redis_connection, keyboard, questions_and_answers)
-
-                    else:
+                    handler = command_handlers.get(user_message)
+                    if not handler:
                         handle_solution_attempt(user_id, user_message, vk, redis_connection, keyboard)
+                    handler()
 
                 time.sleep(0.1)
 

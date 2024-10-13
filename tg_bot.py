@@ -37,6 +37,7 @@ def handle_new_question_request(update, context):
     update.message.reply_text(question)
     return ANSWER
 
+
 def handle_solution_attempt(update, context):
     user_id = update.message.from_user.id
     user_answer = update.message.text.strip().lower()
@@ -45,7 +46,6 @@ def handle_solution_attempt(update, context):
     last_question = redis_connection.get(f'question:{user_id}')
 
     correct_answer = redis_connection.get(f'answer:{user_id}')
-
 
     if correct_answer:
         correct_answer = correct_answer.split('.')[0].strip().lower()
@@ -57,6 +57,7 @@ def handle_solution_attempt(update, context):
     else:
         update.message.reply_text("К сожалению, ваш ответ неверный. Попробуйте снова!", reply_markup=reply_markup)
         return ANSWER
+
 
 def handle_surrender(update, context):
     user_id = update.message.from_user.id
@@ -143,6 +144,7 @@ def main() -> None:
         except Exception:
             logger.exception('Телеграм-бот упал с ошибкой:')
             time.sleep(5)
+
 
 if __name__ == '__main__':
     main()
